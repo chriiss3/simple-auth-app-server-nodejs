@@ -1,7 +1,7 @@
 {
   "name": "simple-auth-app-server-nodejs",
   "version": "1.0.0",
-  "main": "./dist/server.js",
+  "main": "./dist/app.js",
   "type": "module",
   "scripts": {
     "compile": "npx tsc",
