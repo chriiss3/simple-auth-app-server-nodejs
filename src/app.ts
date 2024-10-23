@@ -13,6 +13,8 @@ import userRoutes from "./routes/userRoutes.js";
 import handleCritialError from "./utils/criticalErrorHandler.js";
 // import { handler } from "./utils/criticalErrorHandler.js";
 
+console.log(SENDGRID_API_KEY)
+
 const app = express();
 
 app.use(express.json());

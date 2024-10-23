@@ -11,4 +11,4 @@ router.get("/user-data", verifyAccessToken, getUserData);
 
 export default router;
 
-//   "include": ["src/**/*.ts", "express.d.ts"]
+//   "include": ["src/**/*.ts", "express.d.ts"]git config --global user.email "tu.nueva.email@example.com"
