@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { ZodError } from "zod";
-import { CLIENT_ERROR_MESSAGES } from "../constants";
 import { MongooseError } from "mongoose";
-import { NODE_ENV } from "../config/env";
+
+import { NODE_ENV } from "../config/env.js";
+import { CLIENT_ERROR_MESSAGES } from "../constants.js";
 
 const handleError = async (err: Error, req: Request, res: Response, next: NextFunction) => {
   const useGenericErrorMessages: boolean = NODE_ENV.trim() === "production";
@@ -17,26 +18,25 @@ const handleError = async (err: Error, req: Request, res: Response, next: NextFu
       if (err.name === "TokenExpiredError") {
         res.status(401).json({ error: "Token expirado" });
       }
+
+      // res.status(401).json({ error: CLIENT_ERROR_MESSAGES.authError });
     } else {
       res.status(401).json({ error: err.message });
     }
-    // res.status(401).json({ error: CLIENT_ERROR_MESSAGES.authError });
   }
 
   if (err instanceof MongooseError) {
-    // res.status(400).json({ error: "Error de la base de datos" });
-
     if (useGenericErrorMessages) {
       if (err.name === "DocumentNotFoundError") {
         res.status(401).json({ error: "Recurso no encontrado" });
       }
+      // res.status(400).json({ error: "Error de la base de datos" });
     } else {
       res.status(401).json({ error: err.message });
     }
   }
 
   if (err.message === CLIENT_ERROR_MESSAGES.accountAlreadyExists) {
-    // await handler.handleError(res, new AppError(err.message, true, 404));
     res.status(400).json({ error: CLIENT_ERROR_MESSAGES.accountAlreadyExists });
   }
 
@@ -60,5 +60,3 @@ const handleError = async (err: Error, req: Request, res: Response, next: NextFu
 };
 
 export default handleError;
-
-// errorCustomizer.ts

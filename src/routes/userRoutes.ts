@@ -1,7 +1,7 @@
 import { Router } from "express";
 
-import { updatePassword, getUserData } from "../controllers/userController";
-import verifyAccessToken from "../middlewares/accessTokenVerify";
+import { updatePassword, getUserData } from "../controllers/userController.js";
+import verifyAccessToken from "../middlewares/accessTokenVerify.js";
 
 const router = Router();
 
@@ -10,5 +10,3 @@ router.get("/user-data", verifyAccessToken, getUserData);
 // router.post("/delete-account", verifyAccessToken, deleteAccount);
 
 export default router;
-
-//   "include": ["src/**/*.ts", "express.d.ts"]git config --global user.email "tu.nueva.email@example.com"

@@ -12,3 +12,6 @@
   },
   "include": ["src/**/*"]
 }
+
+
+//  "include": ["src/**/*.ts", "express.d.ts"]

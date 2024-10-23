@@ -19,7 +19,7 @@ const UserSchema = new Schema<UserTypes>(
   },
   {
     versionKey: false,
-    timestamps: true
+    timestamps: true,
   }
 );
 

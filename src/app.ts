@@ -11,9 +11,6 @@ import authRoutes from "./routes/authRoutes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import userRoutes from "./routes/userRoutes.js";
 import handleCritialError from "./utils/criticalErrorHandler.js";
-// import { handler } from "./utils/criticalErrorHandler.js";
-
-console.log(SENDGRID_API_KEY)
 
 const app = express();
 
@@ -48,7 +45,7 @@ const startServer = async () => {
 
     console.log("Connected to DB");
 
-    console.log(NODE_ENV.trim() === "development");
+    console.log("Entorno actual:", NODE_ENV.trim());
 
     app.listen(PORT, () => {
       console.log("Servidor iniciado");

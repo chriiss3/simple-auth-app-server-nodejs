@@ -10,17 +10,14 @@ const verifyAccessToken = async (req, res, next) => {
     try {
         const decoded = await validateAccessToken(accessToken, JWT_ACCESS_SECRET_KEY);
         const userFound = (await User.findOne({ _id: decoded.id }));
-        console.log(userFound);
         req.user = {
             name: userFound.name,
             email: userFound.email,
             password: userFound.password,
             createdAt: userFound.createdAt,
             updatedAt: userFound.updatedAt,
-            id: userFound._id
+            id: userFound._id,
         };
-        // req.user = userFound
-        console.log("user data:", req.user);
         next();
     }
     catch (err) {
@@ -52,10 +49,9 @@ const verifyAccessToken = async (req, res, next) => {
                         res.status(401).json({ error: err.message });
                     }
                 }
-                // Sesion expirada, vuelve a iniciar sesion
+                // res.status(401).json({ error: Sesion expirada, vuelve a iniciar sesion });
             }
             if (!useGenericErrorMessages) {
-                // res.status(401).json({ error: err.message });
                 console.error(err);
             }
         }

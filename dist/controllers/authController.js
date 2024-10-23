@@ -4,7 +4,6 @@ import { validateUser, registerUser, sendResetLink, resetUserPassword } from "..
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { removeAuthCookie, setAuthCookie } from "../utils/cookie.js";
 const register = async (req, res, next) => {
-    console.log("register");
     try {
         const { email, password, name } = req.body;
         if (req.cookies.auth_access_token)
@@ -19,9 +18,7 @@ const register = async (req, res, next) => {
         res.status(200).json({ message: CLIENT_SUCCES_MESSAGES.registerSuccess });
     }
     catch (err) {
-        // console.error(err)
         next(err);
-        // next(new AppError(err.message, "register"))
     }
 };
 const login = async (req, res, next) => {

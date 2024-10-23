@@ -6,7 +6,7 @@ interface UserTypes {
   password: string;
   createdAt: Date;
   _id: string;
-  updatedAt: Date | undefined
+  updatedAt: Date | undefined;
 }
 
 interface TokenPayloadTypes {

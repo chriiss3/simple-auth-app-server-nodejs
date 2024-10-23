@@ -5,8 +5,6 @@ import { generateAccessToken, validateAccessToken } from "../utils/jwt.js";
 import { IS_GITHUB_REPO, CLIENT_URL, GITHUB_REPO_NAME, JWT_ACCESS_SECRET_KEY } from "../config/env.js";
 import sgMail from "@sendgrid/mail";
 import { UserTypes } from "../userInterfaces.js";
-// import {AppError} from "../utils/criticalErrorHandler.js";
-// import { MongooseError } from "mongoose";
 
 const registerUser = async (email: string, password: string, name: string): Promise<UserTypes> => {
   const userFound = await User.findOne({ email });
@@ -23,15 +21,11 @@ const registerUser = async (email: string, password: string, name: string): Prom
 
   const userSaved = await newUser.save();
 
-  console.log(userSaved)
-
   return userSaved;
 };
 
 const validateUser = async (email: string, password: string): Promise<UserTypes> => {
   const userFound = await User.findOne({ email });
-
-  // console.log(userFound);
 
   if (!userFound) throw new Error(CLIENT_ERROR_MESSAGES.accountNotFound);
 

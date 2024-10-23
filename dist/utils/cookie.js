@@ -1,4 +1,4 @@
-import { NODE_ENV } from "../config/env";
+import { NODE_ENV } from "../config/env.js";
 const setAuthCookie = (res, name, value, maxAge) => {
     const cookieOptions = {
         httpOnly: NODE_ENV.trim() === "production",

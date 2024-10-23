@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { TokenPayloadTypes } from "../userInterfaces";
+import { TokenPayloadTypes } from "../userInterfaces.js";
 
 const generateAccessToken = (payload: { id: string }, secretKey: string): Promise<string> => {
   return new Promise((resolve, reject) => {

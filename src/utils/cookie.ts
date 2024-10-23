@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { NODE_ENV } from "../config/env";
+import { NODE_ENV } from "../config/env.js";
 
 const setAuthCookie = (res: Response, name: string, value: string, maxAge: number) => {
   const cookieOptions = {

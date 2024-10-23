@@ -4,8 +4,6 @@ import { hashPassword, validatePassword } from "../utils/bcrypt.js";
 import { generateAccessToken, validateAccessToken } from "../utils/jwt.js";
 import { IS_GITHUB_REPO, CLIENT_URL, GITHUB_REPO_NAME, JWT_ACCESS_SECRET_KEY } from "../config/env.js";
 import sgMail from "@sendgrid/mail";
-// import {AppError} from "../utils/criticalErrorHandler.js";
-// import { MongooseError } from "mongoose";
 const registerUser = async (email, password, name) => {
     const userFound = await User.findOne({ email });
     if (userFound)
@@ -17,12 +15,10 @@ const registerUser = async (email, password, name) => {
         name,
     });
     const userSaved = await newUser.save();
-    console.log(userSaved);
     return userSaved;
 };
 const validateUser = async (email, password) => {
     const userFound = await User.findOne({ email });
-    // console.log(userFound);
     if (!userFound)
         throw new Error(CLIENT_ERROR_MESSAGES.accountNotFound);
     const isMatch = await validatePassword(password, userFound.password);

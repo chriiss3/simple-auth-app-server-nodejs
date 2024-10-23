@@ -23,20 +23,15 @@ const verifyAccessToken = async (req: Request, res: Response, next: NextFunction
 
     const userFound = (await User.findOne({ _id: decoded.id })) as UserTypes;
 
-    console.log(userFound)
-
     req.user = {
       name: userFound.name,
       email: userFound.email,
       password: userFound.password,
       createdAt: userFound.createdAt,
       updatedAt: userFound.updatedAt,
-      id: userFound._id
-    }
+      id: userFound._id,
+    };
 
-    // req.user = userFound
-
-    console.log("user data:", req.user);
     next();
   } catch (err) {
     if (err instanceof jwt.JsonWebTokenError) {
@@ -73,11 +68,10 @@ const verifyAccessToken = async (req: Request, res: Response, next: NextFunction
           }
         }
 
-        // Sesion expirada, vuelve a iniciar sesion
+        // res.status(401).json({ error: Sesion expirada, vuelve a iniciar sesion });
       }
 
       if (!useGenericErrorMessages) {
-        // res.status(401).json({ error: err.message });
         console.error(err);
       }
     }

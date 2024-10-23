@@ -14,7 +14,6 @@ import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { removeAuthCookie, setAuthCookie } from "../utils/cookie.js";
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
-  console.log("register");
   try {
     const { email, password, name } = req.body;
 
@@ -31,9 +30,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
 
     res.status(200).json({ message: CLIENT_SUCCES_MESSAGES.registerSuccess });
   } catch (err) {
-    // console.error(err)
     next(err);
-    // next(new AppError(err.message, "register"))
   }
 };
 
