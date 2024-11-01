@@ -12,10 +12,4 @@ const setAuthCookie = (res: Response, name: string, value: string, maxAge: numbe
   res.cookie(name, value, cookieOptions);
 };
 
-const removeAuthCookie = (res: Response, name: string) => {
-  res.cookie(name, "", { maxAge: 0 });
-};
-
-export { setAuthCookie, removeAuthCookie };
-
-// maxAge:new Date(Date.now() + (parseInt(process.env.COOKIE_EXPIRATION_DAYS * 24 * 60 * 60 * 1000))),
+export { setAuthCookie };

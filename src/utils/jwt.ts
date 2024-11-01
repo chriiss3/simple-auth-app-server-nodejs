@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { TokenPayloadTypes } from "../userInterfaces.js";
+import { UserTokenPayloadTypes } from "../interfaces/userInterfaces.js";
 
 const generateAccessToken = (payload: { id: string }, secretKey: string): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -15,7 +15,7 @@ const generateAccessToken = (payload: { id: string }, secretKey: string): Promis
 
 const generateRefreshToken = (payload: { id: string }, secretKey: string): Promise<string> => {
   return new Promise((resolve, reject) => {
-    jwt.sign(payload, secretKey, { expiresIn: "7d" }, (err, token) => {
+    jwt.sign(payload, secretKey, { expiresIn: "30d" }, (err, token) => {
       if (err) {
         reject(err);
       } else {
@@ -25,25 +25,25 @@ const generateRefreshToken = (payload: { id: string }, secretKey: string): Promi
   });
 };
 
-const validateAccessToken = (token: string, secretKey: string): Promise<TokenPayloadTypes> => {
+const validateAccessToken = (token: string, secretKey: string): Promise<UserTokenPayloadTypes> => {
   return new Promise((resolve, reject) => {
     jwt.verify(token, secretKey, (err, payload) => {
       if (err) {
         reject(err);
       } else {
-        resolve(payload as TokenPayloadTypes);
+        resolve(payload as UserTokenPayloadTypes);
       }
     });
   });
 };
 
-const validateRefreshToken = (token: string, secretKey: string): Promise<TokenPayloadTypes> => {
+const validateRefreshToken = (token: string, secretKey: string): Promise<UserTokenPayloadTypes> => {
   return new Promise((resolve, reject) => {
     jwt.verify(token, secretKey, (err, payload) => {
       if (err) {
         reject(err);
       } else {
-        resolve(payload as TokenPayloadTypes);
+        resolve(payload as UserTokenPayloadTypes);
       }
     });
   });

@@ -20,10 +20,10 @@ const loginSchema = z.object({
 const resetPasswordSchema = z
   .object({
     newPassword: z
-      .string({ required_error: CLIENT_ERROR_MESSAGES.passwordFieldRequired })
+      .string({ required_error: CLIENT_ERROR_MESSAGES.newPasswordFieldRequired })
       .min(8, { message: CLIENT_ERROR_MESSAGES.invalidPasswordLength }),
 
-    confirmNewPassword: z.string({ required_error: CLIENT_ERROR_MESSAGES.newPasswordFieldRequired }),
+    confirmNewPassword: z.string({ required_error: CLIENT_ERROR_MESSAGES.confirmNewPasswordFieldRequired }),
   })
   .refine((data) => data.newPassword === data.confirmNewPassword, {
     message: CLIENT_ERROR_MESSAGES.passwordNotMath,

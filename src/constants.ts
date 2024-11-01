@@ -23,6 +23,40 @@ const CLIENT_ERROR_MESSAGES = {
   passwordFieldRequired: "El campo de contraseña es obligatorio",
   nameFieldRequired: "El campo de nombre es obligatorio",
   newPasswordFieldRequired: "El campo de nueva contraseña es obligatorio",
+  confirmNewPasswordFieldRequired: "El campo de confirmacion de nueva contraseña es obligatorio",
 };
 
-export { CLIENT_SUCCES_MESSAGES, CLIENT_ERROR_MESSAGES };
+const MONGOOSE_ERROR_MESSAGES = [
+  "DocumentNotFoundError",
+  "DivergentArrayError",
+  "MissingSchemaError",
+  "DisconnectedError",
+  "StrictModeError",
+  "ValidatorError",
+  "ValidationError",
+  "CastError",
+  "SyncIndexesError",
+  "OverwriteModelError",
+  "ParallelSaveError",
+  "MongooseServerSelectionError",
+];
+
+const JWT_ERROR_MESSAGES = [
+  "jwt must be provided",
+  "invalid token",
+  "jwt malformed",
+  "invalid signature",
+  "jwt signature is required",
+  "jwt audience invalid. expected: [aud]",
+  "jwt issuer invalid. expected: [iss]",
+  "jwt id invalid",
+  "jwt subject invalid",
+  "jwt algorithm invalid",
+  "jwt not active",
+  "jwt not before",
+  "jwt audience invalid",
+  "jwt issuer invalid",
+  "secret or public key must be provided",
+];
+
+export { CLIENT_SUCCES_MESSAGES, CLIENT_ERROR_MESSAGES, JWT_ERROR_MESSAGES, MONGOOSE_ERROR_MESSAGES };

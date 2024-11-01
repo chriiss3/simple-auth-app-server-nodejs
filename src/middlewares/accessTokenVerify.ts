@@ -6,27 +6,28 @@ import {
   JWT_ACCESS_SECRET_KEY,
   JWT_ACCESS_TOKEN_NAME,
   JWT_REFRESH_SECRET_KEY,
-  JWT_REFRESH_TOKEN_NAME,
   ACCESS_TOKEN_COOKIE_EXPIRE_TIME,
   NODE_ENV,
 } from "../config/env.js";
-import { setAuthCookie, removeAuthCookie } from "../utils/cookie.js";
-import { UserTypes } from "../userInterfaces.js";
+import { setAuthCookie } from "../utils/cookie.js";
+import { UserTokenPayloadTypes } from "../interfaces/userInterfaces.js";
 
 const verifyAccessToken = async (req: Request, res: Response, next: NextFunction) => {
-  const refreshToken = req.cookies.auth_refresh_token;
   const accessToken = req.cookies.auth_access_token;
-  const useGenericErrorMessages: boolean = NODE_ENV.trim() === "production";
+  const DEV_ENV = NODE_ENV.trim() === "development";
 
   try {
     const decoded = await validateAccessToken(accessToken, JWT_ACCESS_SECRET_KEY);
+    const userFound = await User.findOne({ _id: decoded.id });
 
-    const userFound = (await User.findOne({ _id: decoded.id })) as UserTypes;
+    if (!userFound) return res.sendStatus(404);
 
     req.user = {
-      name: userFound.name,
       email: userFound.email,
       password: userFound.password,
+      name: userFound.name,
+      refreshToken: userFound.refreshToken,
+      sessionActive: userFound.sessionActive,
       createdAt: userFound.createdAt,
       updatedAt: userFound.updatedAt,
       id: userFound._id,
@@ -34,45 +35,53 @@ const verifyAccessToken = async (req: Request, res: Response, next: NextFunction
 
     next();
   } catch (err) {
-    if (err instanceof jwt.JsonWebTokenError) {
-      try {
-        const decoded = await validateRefreshToken(refreshToken, JWT_REFRESH_SECRET_KEY);
+    if (DEV_ENV) console.error(err);
 
-        const userFound = (await User.findOne({ _id: decoded.id })) as UserTypes;
+    if (err instanceof jwt.JsonWebTokenError || err instanceof jwt.TokenExpiredError || err instanceof jwt.NotBeforeError) {
+      if (err.name === "TokenExpiredError") {
+        const decoded = jwt.decode(accessToken) as UserTokenPayloadTypes;
+        if (!decoded) res.sendStatus(401);
 
-        if (!userFound) {
-          removeAuthCookie(res, JWT_REFRESH_TOKEN_NAME);
+        const userFound = await User.findOne({ _id: decoded.id });
+        if (!userFound) return res.sendStatus(404);
 
-          if (useGenericErrorMessages) {
-            res.status(404).json({ error: "Error de autenticacion, vuelve a iniciar sesion" });
-          } else {
-            res.status(404).json({ error: "No se encontro una cuenta activa en el token de refreso" });
-          }
+        if (!userFound.refreshToken) return res.sendStatus(401);
 
-          return;
+        try {
+          const refreshTokenDecoded = await validateRefreshToken(userFound.refreshToken, JWT_REFRESH_SECRET_KEY);
+
+          const newAccessToken = await generateAccessToken({ id: refreshTokenDecoded.id }, JWT_ACCESS_SECRET_KEY);
+
+          req.user = {
+            email: userFound.email,
+            password: userFound.password,
+            name: userFound.name,
+            refreshToken: userFound.refreshToken,
+            sessionActive: userFound.sessionActive,
+            createdAt: userFound.createdAt,
+            updatedAt: userFound.updatedAt,
+            id: userFound._id,
+          };
+
+          res.clearCookie(JWT_ACCESS_TOKEN_NAME);
+          setAuthCookie(res, JWT_ACCESS_TOKEN_NAME, newAccessToken, ACCESS_TOKEN_COOKIE_EXPIRE_TIME);
+
+          next();
+        } catch (err) {
+          // Si hay un error con el token de actualizacion
+          if (DEV_ENV) console.error(err);
+
+          await User.findByIdAndUpdate(userFound.id, { refreshToken: null }, { new: true });
+
+          return res.status(401).json({ error: "Error de autenticación, vuelve a iniciar sesion." });
         }
+      } else if (err.message === "jwt must be provided") {
+        return res.sendStatus(401)
+      } else {
+        // Si es un error distinto a "TokenExpiredError"
 
-        const newAccessToken = await generateAccessToken({ id: userFound._id }, JWT_ACCESS_SECRET_KEY);
-
-        setAuthCookie(res, JWT_ACCESS_TOKEN_NAME, newAccessToken, ACCESS_TOKEN_COOKIE_EXPIRE_TIME);
-
-        next();
-      } catch (err) {
-        removeAuthCookie(res, JWT_REFRESH_TOKEN_NAME);
-
-        if (err instanceof jwt.JsonWebTokenError) {
-          if (useGenericErrorMessages) {
-            res.status(401).json({ error: "Error de autenticacion, vuelve a iniciar sesion" });
-          } else {
-            res.status(401).json({ error: err.message });
-          }
-        }
-
-        // res.status(401).json({ error: Sesion expirada, vuelve a iniciar sesion });
-      }
-
-      if (!useGenericErrorMessages) {
-        console.error(err);
+        res.clearCookie(JWT_ACCESS_TOKEN_NAME);
+        return res.status(401).json({ error: "Error de autenticación, vuelve a iniciar sesion." });
       }
     }
   }

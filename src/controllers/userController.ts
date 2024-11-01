@@ -8,4 +8,8 @@ const getUserData = async (req: Request, res: Response) => {
   res.status(200).json(req.user);
 };
 
-export { updatePassword, getUserData };
+const deleteAccount = async (req: Request, res: Response) => {
+  res.send("Account deleted!");
+};
+
+export { updatePassword, getUserData, deleteAccount };

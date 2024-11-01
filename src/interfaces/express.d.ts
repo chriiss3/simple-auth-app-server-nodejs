@@ -4,12 +4,14 @@ declare global {
   namespace Express {
     interface Request {
       user: {
-        id: string | undefined;
-        name: string | undefined;
         email: string | undefined;
         password: string | undefined;
+        name: string | undefined;
+        refreshToken: string | undefined | null,
+        sessionActive: boolean | undefined,
         createdAt: Date | undefined;
         updatedAt: Date | undefined;
+        id: string | undefined;
       };
     }
   }

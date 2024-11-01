@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import type { UserTypes } from "./userInterfaces.js";
+import type { UserTypes } from "./interfaces/userInterfaces.js";
 
 const UserSchema = new Schema<UserTypes>(
   {
@@ -16,6 +16,11 @@ const UserSchema = new Schema<UserTypes>(
       type: String,
       trim: true,
     },
+    refreshToken: {
+      type: String,
+      default: null,
+    },
+    sessionActive: Boolean,
   },
   {
     versionKey: false,

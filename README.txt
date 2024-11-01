@@ -1,6 +1,5 @@
-Solo se utiliza "throw new AppError" para errores HTTP
+Solo se utiliza "AppError" para errores HTTP
 
 Solo imprimir en consola errores operacionales
 
-
-AppError se encarga de manejar todos los errores
+No incluir 2 funciones que puedan lanzar el mismo tipo de error en un controlador

@@ -1,15 +1,22 @@
 import User from "../userModel.js";
 import { CLIENT_ERROR_MESSAGES } from "../constants.js";
 import { hashPassword, validatePassword } from "../utils/bcrypt.js";
-import { generateAccessToken, validateAccessToken } from "../utils/jwt.js";
-import { IS_GITHUB_REPO, CLIENT_URL, GITHUB_REPO_NAME, JWT_ACCESS_SECRET_KEY } from "../config/env.js";
+import { generateAccessToken, validateAccessToken, generateRefreshToken } from "../utils/jwt.js";
+import {
+  IS_GITHUB_REPO,
+  CLIENT_URL,
+  GITHUB_REPO_NAME,
+  JWT_ACCESS_SECRET_KEY,
+  JWT_REFRESH_SECRET_KEY,
+} from "../config/env.js";
 import sgMail from "@sendgrid/mail";
-import { UserTypes } from "../userInterfaces.js";
+import { UserTypes } from "../interfaces/userInterfaces.js";
+import AppError from "../utils/customError.js";
 
 const registerUser = async (email: string, password: string, name: string): Promise<UserTypes> => {
   const userFound = await User.findOne({ email });
 
-  if (userFound) throw new Error(CLIENT_ERROR_MESSAGES.accountAlreadyExists);
+  if (userFound) throw new AppError("Bad Request", CLIENT_ERROR_MESSAGES.accountAlreadyExists, "register");
 
   const passwordHash = await hashPassword(password, 10);
 
@@ -24,24 +31,44 @@ const registerUser = async (email: string, password: string, name: string): Prom
   return userSaved;
 };
 
-const validateUser = async (email: string, password: string): Promise<UserTypes> => {
+const loginUser = async (email: string, password: string): Promise<UserTypes> => {
+  let userUpdated;
+
   const userFound = await User.findOne({ email });
 
-  if (!userFound) throw new Error(CLIENT_ERROR_MESSAGES.accountNotFound);
+  if (!userFound) throw new AppError("Not Found", CLIENT_ERROR_MESSAGES.accountNotFound, "login");
 
   const isMatch = await validatePassword(password, userFound.password);
 
-  if (!isMatch) throw new Error(CLIENT_ERROR_MESSAGES.incorrectPassword);
+  if (!isMatch) throw new AppError("Bad Request", CLIENT_ERROR_MESSAGES.incorrectPassword, "login");
 
-  return userFound;
+  const refreshToken = await generateRefreshToken({ id: userFound._id }, JWT_REFRESH_SECRET_KEY);
+
+  // Menajear si ya existe un token de actualizacion en la cuenta del usuario
+  userUpdated = await User.findByIdAndUpdate(userFound.id, { refreshToken: refreshToken }, { new: true });
+  userUpdated = await User.findByIdAndUpdate(userFound.id, { sessionActive: true }, { new: true });
+
+  return userUpdated;
 };
+
+// const validateUser = async (email: string, password: string): Promise<UserTypes> => {
+//   const userFound = await User.findOne({ email });
+
+//   if (!userFound) throw new AppError("Not Found", CLIENT_ERROR_MESSAGES.accountNotFound, "login");
+
+//   const isMatch = await validatePassword(password, userFound.password);
+
+//   if (!isMatch) throw new AppError("Bad Request", CLIENT_ERROR_MESSAGES.incorrectPassword, "login");
+
+//   return userFound;
+// };
 
 const sendResetLink = async (email: string) => {
   let resetLink: string;
 
   const userFound = await User.findOne({ email });
 
-  if (!userFound) throw new Error(CLIENT_ERROR_MESSAGES.accountNotFound);
+  if (!userFound) throw new AppError("Not Found", CLIENT_ERROR_MESSAGES.accountNotFound, "forgotPassword");
 
   const accessToken = await generateAccessToken({ id: userFound._id }, JWT_ACCESS_SECRET_KEY);
 
@@ -71,29 +98,11 @@ const resetUserPassword = async (heeaderToken: string, newPassword: string): Pro
 
   const userFound = await User.findById(decoded.id);
 
-  /*
-
-  next(new AppError(e.message, register))
-
-  if (err.message === "TokenExpiredError") res.send("Token expirado")
-
-  if (err.message === "TokenExpiredError") res.send("Sesion expirada, vuelve a iniciar sesion")
-
-  if (err.message === "TokenExpiredError" && err.source === resetPassword) {
-    res.send("Link de restablecimiento expirado")
-  }
-
-  No se encontro una cuenta asociada, error al restablecer la contraseña
-  Esta cuenta ya esta registrada
-  No se encontro una cuenta asociada, error al enviar el enlace de restablecimiento
-
-  */
-
-  if (!userFound) throw new Error(CLIENT_ERROR_MESSAGES.accountNotFound);
+  if (!userFound) throw new AppError("Not Found", CLIENT_ERROR_MESSAGES.accountNotFound, "resetPassword");
 
   const isMatch = await validatePassword(newPassword, userFound.password);
 
-  if (isMatch) throw new Error(CLIENT_ERROR_MESSAGES.passwordIsMatch);
+  if (isMatch) throw new AppError("Bad Request", CLIENT_ERROR_MESSAGES.passwordIsMatch, "resetPassword");
 
   const passwordHash = await hashPassword(newPassword, 10);
 
@@ -102,4 +111,4 @@ const resetUserPassword = async (heeaderToken: string, newPassword: string): Pro
   return userReset;
 };
 
-export { registerUser, validateUser, sendResetLink, resetUserPassword };
+export { registerUser, sendResetLink, resetUserPassword, loginUser };

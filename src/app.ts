@@ -14,15 +14,16 @@ import handleCritialError from "./utils/criticalErrorHandler.js";
 
 const app = express();
 
+const corsOptions = {
+  methods: "GET,POST,PUT,DELETE,OPTIONS",
+  origin: CLIENT_URL,
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization", "Cache-Control", "Pragma", "Expires"],
+};
+
 app.use(express.json());
 app.use(morgan("dev"));
-app.use(
-  cors({
-    origin: CLIENT_URL,
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+app.use(cors(corsOptions));
 app.use(cookieParser());
 sgMail.setApiKey(SENDGRID_API_KEY);
 app.use(helmet());

@@ -10,8 +10,5 @@
     "noImplicitAny": false,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*.ts", "express.d.ts"]
 }
-
-
-//  "include": ["src/**/*.ts", "express.d.ts"]

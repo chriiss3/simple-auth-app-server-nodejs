@@ -1,18 +1,20 @@
 import { Date } from "mongoose";
 
 interface UserTypes {
-  name: string;
   email: string;
   password: string;
+  name: string;
+  refreshToken: string | null
+  sessionActive: boolean
   createdAt: Date;
+  updatedAt: Date;
   _id: string;
-  updatedAt: Date | undefined;
 }
 
-interface TokenPayloadTypes {
+interface UserTokenPayloadTypes {
   id: string;
   iat: number;
   exp: number;
 }
 
-export { UserTypes, TokenPayloadTypes };
+export { UserTypes, UserTokenPayloadTypes };
