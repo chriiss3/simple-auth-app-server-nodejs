@@ -116,10 +116,12 @@ const forgotPassword = async (req: Request, res: Response, next: NextFunction) =
     } else if (err instanceof AppError) {
       next(new AppError(err.name, err.message, "resetPassword"));
     } else if (sgError.response) {
+      console.error(sgError.response.body)
       handleCritialError(sgError);
     }
   }
 };
+
 
 const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -151,3 +153,4 @@ const resetPassword = async (req: Request, res: Response, next: NextFunction) =>
 };
 
 export { register, login, logout, forgotPassword, resetPassword };
+
