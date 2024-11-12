@@ -12,4 +12,6 @@ const deleteAccount = async (req: Request, res: Response) => {
   res.send("Account deleted!");
 };
 
+// updateEmail
+
 export { updatePassword, getUserData, deleteAccount };

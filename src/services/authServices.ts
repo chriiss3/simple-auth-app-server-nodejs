@@ -9,9 +9,11 @@ import {
   JWT_ACCESS_SECRET_KEY,
   JWT_REFRESH_SECRET_KEY,
 } from "../config/env.js";
-import sgMail from "@sendgrid/mail";
+// import sgMail from "@sendgrid/mail";
 import { UserTypes } from "../interfaces/userInterfaces.js";
 import AppError from "../utils/customError.js";
+import Mailgun from "mailgun.js";
+import formData from "form-data";
 
 const registerUser = async (email: string, password: string, name: string): Promise<UserTypes> => {
   const userFound = await User.findOne({ email });
@@ -64,6 +66,14 @@ const loginUser = async (email: string, password: string): Promise<UserTypes> =>
 // };
 
 const sendResetLink = async (email: string) => {
+  const mailgun = new Mailgun(formData);
+
+  const MAILGUN_API_KEY = "1731f324ed20ada9b923f27ad0a5260a-f6fe91d3-050756c2";
+  const MAILGUN_DOMAIN = "sandbox48e672157ad54631b92c3b71b7b55af6.mailgun.org";
+
+  const mg = mailgun.client({ username: "api", key: MAILGUN_API_KEY });
+
+  const fromEmail = "Simple Auth App (Node.js) <mailgun@sandbox48e672157ad54631b92c3b71b7b55af6.mailgun.org>";
   let resetLink: string;
 
   const userFound = await User.findOne({ email });
@@ -78,9 +88,9 @@ const sendResetLink = async (email: string) => {
     resetLink = `${CLIENT_URL}/reset-password.html?token=${accessToken}`;
   }
 
-  const msg = {
+  const sendResult = await mg.messages.create(MAILGUN_DOMAIN, {
+    from: fromEmail,
     to: email,
-    from: "christiandolores003@outlook.com",
     subject: "Restablecer contraseña",
     html: `
       <h1>Restablece tu contraseña</h1>
@@ -88,9 +98,23 @@ const sendResetLink = async (email: string) => {
       <a href="${resetLink}">Restablecer contraseña</a>
       <p>Este enlace es válido por 1 hora.</p>
     `,
-  };
+  });
 
-  await sgMail.send(msg);
+  console.log(sendResult);
+
+  // const msg = {
+  //   to: email,
+  //   from: "christiandolores003@outlook.com",
+  //   subject: "Restablecer contraseña",
+  //   html: `
+  //     <h1>Restablece tu contraseña</h1>
+  //     <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
+  //     <a href="${resetLink}">Restablecer contraseña</a>
+  //     <p>Este enlace es válido por 1 hora.</p>
+  //   `,
+  // };
+
+  // await sgMail.send(msg);
 };
 
 const resetUserPassword = async (heeaderToken: string, newPassword: string): Promise<UserTypes> => {
