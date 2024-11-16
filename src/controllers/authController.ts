@@ -5,30 +5,21 @@ import { MongooseError } from "mongoose";
 import {
   JWT_ACCESS_SECRET_KEY,
   JWT_ACCESS_TOKEN_NAME,
-  // JWT_REFRESH_SECRET_KEY,
+  JWT_REFRESH_SECRET_KEY,
   JWT_REFRESH_TOKEN_NAME,
-  // REFRESH_TOKEN_COOKIE_EXPIRE_TIME,
   ACCESS_TOKEN_COOKIE_EXPIRE_TIME,
+  NODE_ENV,
 } from "../config/env.js";
+import { UserTokenPayloadTypes } from "../interfaces/userInterfaces.js";
 import { CLIENT_SUCCES_MESSAGES } from "../constants.js";
-import { loginUser, registerUser, sendResetLink, resetUserPassword } from "../services/authServices.js";
+import { loginUser, registerUser, sendResetLink, resetUserPassword, logoutUser } from "../services/authServices.js";
 import { generateAccessToken } from "../utils/jwt.js";
 import { setAuthCookie } from "../utils/cookie.js";
 import AppError from "../utils/customError.js";
-// import handleCritialError from "../utils/criticalErrorHandler.js";
+import User from "../userModel.js";
+import { validateRefreshToken } from "../utils/jwt.js";
 
-// interface SendGridError extends Error {
-//   response?: {
-//     statusCode: number;
-//     body: {
-//       errors: Array<{
-//         message: string;
-//         field?: string;
-//         help?: string;
-//       }>;
-//     };
-//   };
-// }
+const DEV_ENV = NODE_ENV.trim() === "development";
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -40,10 +31,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     const userSaved = await registerUser(email, password, name);
 
     const accessToken = await generateAccessToken({ id: userSaved._id }, JWT_ACCESS_SECRET_KEY);
-    // const refreshToken = await generateRefreshToken({ id: userSaved._id }, JWT_REFRESH_SECRET_KEY);
-
     setAuthCookie(res, JWT_ACCESS_TOKEN_NAME, accessToken, ACCESS_TOKEN_COOKIE_EXPIRE_TIME);
-    // setAuthCookie(res, JWT_REFRESH_TOKEN_NAME, refreshToken, REFRESH_TOKEN_COOKIE_EXPIRE_TIME);
 
     res.status(200).json({ message: CLIENT_SUCCES_MESSAGES.registerSuccess });
   } catch (err) {
@@ -83,14 +71,17 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     ) {
       next(new AppError(err.name, err.message, "resetPassword"));
     } else if (err instanceof AppError) {
-      next(new AppError(err.name, err.message, "resetPassword"));
+      next(new AppError(err.name, err.message, "login"));
     }
   }
 };
 
 const logout = async (req: Request, res: Response) => {
+  const accessToken = req.body.backupToken;
+
+  logoutUser(accessToken);
+
   res.clearCookie(JWT_ACCESS_TOKEN_NAME);
-  res.clearCookie(JWT_REFRESH_TOKEN_NAME);
 
   res.status(200).json({ message: CLIENT_SUCCES_MESSAGES.logoutSuccess });
 };
@@ -103,8 +94,6 @@ const forgotPassword = async (req: Request, res: Response, next: NextFunction) =
 
     res.status(200).json({ message: CLIENT_SUCCES_MESSAGES.linkSent });
   } catch (err) {
-    // const sgError = err as SendGridError;
-
     if (err instanceof MongooseError) {
       next(new AppError(err.name, err.message, "resetPassword"));
     } else if (
@@ -127,10 +116,8 @@ const resetPassword = async (req: Request, res: Response, next: NextFunction) =>
     const userReset = await resetUserPassword(heeaderToken, newPassword);
 
     const accessToken = await generateAccessToken({ id: userReset._id }, JWT_ACCESS_SECRET_KEY);
-    // const refreshToken = await generateRefreshToken({ id: userReset._id }, JWT_REFRESH_SECRET_KEY);
 
     setAuthCookie(res, JWT_ACCESS_TOKEN_NAME, accessToken, ACCESS_TOKEN_COOKIE_EXPIRE_TIME);
-    // setAuthCookie(res, JWT_REFRESH_TOKEN_NAME, refreshToken, REFRESH_TOKEN_COOKIE_EXPIRE_TIME);
 
     return res.status(200).json({ message: CLIENT_SUCCES_MESSAGES.passwordResetSuccess });
   } catch (err) {
@@ -148,14 +135,41 @@ const resetPassword = async (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
-const getNewAccessToken = async (req: Request, res: Response) => {  
-  // Aqui pasar el codigo del middleware, enviar el nuevo token en la respuesta  
+const getNewToken = async (req: Request, res: Response) => {
+  const accessToken = req.body.backupToken;
 
-  const accessToken = req.body.token
+  try {
+    const decoded = jwt.decode(accessToken) as UserTokenPayloadTypes;
+    if (!decoded) return res.sendStatus(401); // mandar al middleware de error
 
-  console.log(accessToken)
+    const userFound = await User.findOne({ _id: decoded.id });
+    if (!userFound) return res.sendStatus(404); // mandar al middleware de error
+    if (!userFound.refreshToken) return res.sendStatus(401); // mandar al middleware de error
 
-  res.sendStatus(200)
-}
+    const refreshTokenDecoded = await validateRefreshToken(userFound.refreshToken, JWT_REFRESH_SECRET_KEY);
 
-export { register, login, logout, forgotPassword, resetPassword, getNewAccessToken };
+    const newAccessToken = await generateAccessToken({ id: refreshTokenDecoded.id }, JWT_ACCESS_SECRET_KEY);
+
+    res.status(200).json({ newAccessToken });
+  } catch (err) {
+    if (
+      err instanceof jwt.TokenExpiredError ||
+      err instanceof jwt.JsonWebTokenError ||
+      err instanceof jwt.NotBeforeError
+    ) {
+      if (DEV_ENV) console.error(err);
+
+      logoutUser(accessToken)
+
+      res.clearCookie(JWT_ACCESS_TOKEN_NAME);
+
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({ error: "Sesion expirada, vuelve a iniciar sesion" });
+      } else {
+        return res.status(401).json({ error: "Error de autenticación, vuelve a iniciar sesion" });
+      }
+    }
+  }
+};
+
+export { register, login, logout, forgotPassword, resetPassword, getNewToken };

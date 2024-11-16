@@ -7,7 +7,6 @@ import { NODE_ENV } from "../config/env.js";
 
 const handleError = async (err: AppError, req: Request, res: Response, next: NextFunction) => {
   const DEV_ENV = NODE_ENV.trim() === "development";
-
   if (DEV_ENV) console.error(err);
 
   if (err.message === "jwt expired") {

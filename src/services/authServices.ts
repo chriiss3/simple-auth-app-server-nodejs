@@ -9,11 +9,11 @@ import {
   JWT_ACCESS_SECRET_KEY,
   JWT_REFRESH_SECRET_KEY,
 } from "../config/env.js";
-// import sgMail from "@sendgrid/mail";
-import { UserTypes } from "../interfaces/userInterfaces.js";
+import { UserTypes, UserTokenPayloadTypes } from "../interfaces/userInterfaces.js";
 import AppError from "../utils/customError.js";
 import Mailgun from "mailgun.js";
 import formData from "form-data";
+import jwt from "jsonwebtoken";
 
 const registerUser = async (email: string, password: string, name: string): Promise<UserTypes> => {
   const userFound = await User.findOne({ email });
@@ -135,4 +135,16 @@ const resetUserPassword = async (heeaderToken: string, newPassword: string): Pro
   return userReset;
 };
 
-export { registerUser, sendResetLink, resetUserPassword, loginUser };
+const logoutUser = async (token: string) => {
+  const decoded = jwt.decode(token) as UserTokenPayloadTypes;
+  if (!decoded) return; // mandar al middleware de error (quitar cookie)
+
+  const userFound = await User.findOne({ _id: decoded.id });
+  if (!userFound) return; // mandar al middleware de error (quitar cookie)
+  if (!userFound.refreshToken) return // mandar al middleware de error (quitar cookie)
+
+  await User.findByIdAndUpdate(userFound.id, { refreshToken: null }, { new: true });
+  await User.findByIdAndUpdate(userFound.id, { sessionActive: false }, { new: true });
+};
+
+export { registerUser, sendResetLink, resetUserPassword, loginUser, logoutUser };
