@@ -7,8 +7,8 @@ declare global {
         email: string | undefined;
         password: string | undefined;
         name: string | undefined;
-        refreshToken: string | undefined | null,
-        sessionActive: boolean | undefined,
+        refreshToken: string | undefined | null;
+        sessionActive: boolean | undefined;
         createdAt: Date | undefined;
         updatedAt: Date | undefined;
         id: string | undefined;

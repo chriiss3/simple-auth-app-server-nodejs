@@ -28,12 +28,12 @@ app.use(cookieParser());
 sgMail.setApiKey(SENDGRID_API_KEY);
 app.use(helmet());
 
-app.use("/api/user", userRoutes);
-app.use("/api/auth", authRoutes);
+app.use("/api", userRoutes);
+app.use("/api", authRoutes);
 app.use(errorHandler);
 
 app.all("*", (req: Request, res: Response) => {
-  return res.status(404).json({ error: `Ruta ${req.originalUrl} no encontrada` });
+  return res.status(404).json({ error: `Route ${req.originalUrl} not found` });
 });
 
 process.on("uncaughtException", (err) => {
@@ -45,11 +45,10 @@ const startServer = async () => {
     await connect(DB_URL);
 
     console.log("Connected to DB");
-
-    console.log("Entorno actual:", NODE_ENV.trim());
+    console.log("Environment:", NODE_ENV.trim());
 
     app.listen(PORT, () => {
-      console.log("Servidor iniciado");
+      console.log("Server started");
     });
   } catch (err) {
     handleCritialError(err);

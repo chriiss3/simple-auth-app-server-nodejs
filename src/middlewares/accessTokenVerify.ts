@@ -3,6 +3,7 @@ import { validateAccessToken } from "../utils/jwt.js";
 import { Request, Response, NextFunction } from "express";
 import User from "../userModel.js";
 import { JWT_ACCESS_SECRET_KEY, JWT_ACCESS_TOKEN_NAME, NODE_ENV } from "../config/env.js";
+import { CLIENT_ERROR_MESSAGES } from "../constants.js";
 
 const verifyAccessToken = async (req: Request, res: Response, next: NextFunction) => {
   const accessToken = req.cookies.auth_access_token;
@@ -12,7 +13,7 @@ const verifyAccessToken = async (req: Request, res: Response, next: NextFunction
     const decoded = await validateAccessToken(accessToken, JWT_ACCESS_SECRET_KEY);
     const userFound = await User.findOne({ _id: decoded.id });
 
-    if (!userFound) return res.sendStatus(404);
+    if (!userFound) return res.status(404).json({ error: CLIENT_ERROR_MESSAGES.userNotFound });
 
     req.user = {
       email: userFound.email,
@@ -38,7 +39,7 @@ const verifyAccessToken = async (req: Request, res: Response, next: NextFunction
         return res.sendStatus(401);
       } else {
         res.clearCookie(JWT_ACCESS_TOKEN_NAME);
-        return res.status(401).json({ error: "Error de autenticación, vuelve a iniciar sesion" });
+        return res.status(401).json({ error: CLIENT_ERROR_MESSAGES.authError });
       }
     }
   }

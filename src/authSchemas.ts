@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-import { CLIENT_ERROR_MESSAGES } from "./constants.js";
+import { CLIENT_ERROR_MESSAGES, ERROR_MESSAGES } from "./constants.js";
 
 const registerSchema = z.object({
   name: z.string({ required_error: CLIENT_ERROR_MESSAGES.nameFieldRequired }),
   email: z
     .string({ required_error: CLIENT_ERROR_MESSAGES.emailFieldRequired })
-    .email({ message: CLIENT_ERROR_MESSAGES.invalidMail }),
+    .email({ message: ERROR_MESSAGES.invalidMail }),
   password: z
     .string({ required_error: CLIENT_ERROR_MESSAGES.passwordFieldRequired })
     .min(8, { message: CLIENT_ERROR_MESSAGES.invalidPasswordLength }),
@@ -33,7 +33,7 @@ const resetPasswordSchema = z
 const forgotPasswordSchema = z.object({
   email: z
     .string({ required_error: CLIENT_ERROR_MESSAGES.emailFieldRequired })
-    .email({ message: CLIENT_ERROR_MESSAGES.invalidMail }),
+    .email({ message: ERROR_MESSAGES.invalidMail }),
 });
 
 export { registerSchema, loginSchema, resetPasswordSchema, forgotPasswordSchema };

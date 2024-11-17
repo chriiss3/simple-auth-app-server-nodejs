@@ -1,5 +1,5 @@
 import User from "../userModel.js";
-import { CLIENT_ERROR_MESSAGES } from "../constants.js";
+import { ERROR_MESSAGES, ERROR_NAMES } from "../constants.js";
 import { hashPassword, validatePassword } from "../utils/bcrypt.js";
 import { generateAccessToken, validateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import {
@@ -18,7 +18,7 @@ import jwt from "jsonwebtoken";
 const registerUser = async (email: string, password: string, name: string): Promise<UserTypes> => {
   const userFound = await User.findOne({ email });
 
-  if (userFound) throw new AppError("Bad Request", CLIENT_ERROR_MESSAGES.accountAlreadyExists, "register");
+  if (userFound) throw new AppError(ERROR_NAMES.badRequest, ERROR_MESSAGES.accountAlreadyExists, "");
 
   const passwordHash = await hashPassword(password, 10);
 
@@ -30,40 +30,28 @@ const registerUser = async (email: string, password: string, name: string): Prom
 
   const userSaved = await newUser.save();
 
+  const refreshToken = await generateRefreshToken({ id: userSaved._id }, JWT_REFRESH_SECRET_KEY);
+  await User.findByIdAndUpdate(userSaved.id, { refreshToken: refreshToken }, { new: true });
+  await User.findByIdAndUpdate(userSaved.id, { sessionActive: true }, { new: true });
+
   return userSaved;
 };
 
 const loginUser = async (email: string, password: string): Promise<UserTypes> => {
-  let userUpdated;
-
   const userFound = await User.findOne({ email });
 
-  if (!userFound) throw new AppError("Not Found", CLIENT_ERROR_MESSAGES.accountNotFound, "login");
+  if (!userFound) throw new AppError(ERROR_NAMES.notFound, ERROR_MESSAGES.accountNotFound, "");
 
   const isMatch = await validatePassword(password, userFound.password);
 
-  if (!isMatch) throw new AppError("Bad Request", CLIENT_ERROR_MESSAGES.incorrectPassword, "login");
+  if (!isMatch) throw new AppError(ERROR_NAMES.badRequest, ERROR_MESSAGES.incorrectPassword, "");
 
   const refreshToken = await generateRefreshToken({ id: userFound._id }, JWT_REFRESH_SECRET_KEY);
+  await User.findByIdAndUpdate(userFound.id, { refreshToken: refreshToken }, { new: true });
+  await User.findByIdAndUpdate(userFound.id, { sessionActive: true }, { new: true });
 
-  // Menajear si ya existe un token de actualizacion en la cuenta del usuario
-  userUpdated = await User.findByIdAndUpdate(userFound.id, { refreshToken: refreshToken }, { new: true });
-  userUpdated = await User.findByIdAndUpdate(userFound.id, { sessionActive: true }, { new: true });
-
-  return userUpdated;
+  return userFound;
 };
-
-// const validateUser = async (email: string, password: string): Promise<UserTypes> => {
-//   const userFound = await User.findOne({ email });
-
-//   if (!userFound) throw new AppError("Not Found", CLIENT_ERROR_MESSAGES.accountNotFound, "login");
-
-//   const isMatch = await validatePassword(password, userFound.password);
-
-//   if (!isMatch) throw new AppError("Bad Request", CLIENT_ERROR_MESSAGES.incorrectPassword, "login");
-
-//   return userFound;
-// };
 
 const sendResetLink = async (email: string) => {
   const mailgun = new Mailgun(formData);
@@ -78,7 +66,7 @@ const sendResetLink = async (email: string) => {
 
   const userFound = await User.findOne({ email });
 
-  if (!userFound) throw new AppError("Not Found", CLIENT_ERROR_MESSAGES.accountNotFound, "forgotPassword");
+  if (!userFound) throw new AppError(ERROR_NAMES.notFound, ERROR_MESSAGES.accountNotFound, "");
 
   const accessToken = await generateAccessToken({ id: userFound._id }, JWT_ACCESS_SECRET_KEY);
 
@@ -101,20 +89,6 @@ const sendResetLink = async (email: string) => {
   });
 
   console.log(sendResult);
-
-  // const msg = {
-  //   to: email,
-  //   from: "christiandolores003@outlook.com",
-  //   subject: "Restablecer contraseña",
-  //   html: `
-  //     <h1>Restablece tu contraseña</h1>
-  //     <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
-  //     <a href="${resetLink}">Restablecer contraseña</a>
-  //     <p>Este enlace es válido por 1 hora.</p>
-  //   `,
-  // };
-
-  // await sgMail.send(msg);
 };
 
 const resetUserPassword = async (heeaderToken: string, newPassword: string): Promise<UserTypes> => {
@@ -122,11 +96,11 @@ const resetUserPassword = async (heeaderToken: string, newPassword: string): Pro
 
   const userFound = await User.findById(decoded.id);
 
-  if (!userFound) throw new AppError("Not Found", CLIENT_ERROR_MESSAGES.accountNotFound, "resetPassword");
+  if (!userFound) throw new AppError(ERROR_NAMES.notFound, ERROR_MESSAGES.accountNotFound, "");
 
   const isMatch = await validatePassword(newPassword, userFound.password);
 
-  if (isMatch) throw new AppError("Bad Request", CLIENT_ERROR_MESSAGES.passwordIsMatch, "resetPassword");
+  if (isMatch) throw new AppError(ERROR_NAMES.badRequest, ERROR_MESSAGES.passwordIsMatch, "");
 
   const passwordHash = await hashPassword(newPassword, 10);
 
@@ -135,13 +109,13 @@ const resetUserPassword = async (heeaderToken: string, newPassword: string): Pro
   return userReset;
 };
 
-const logoutUser = async (token: string) => {
+const logoutUser = async (token: string): Promise<void> => {
   const decoded = jwt.decode(token) as UserTokenPayloadTypes;
-  if (!decoded) return; // mandar al middleware de error (quitar cookie)
+  if (!decoded) throw new AppError(ERROR_NAMES.badRequest, ERROR_MESSAGES.invalidToken, "");
 
   const userFound = await User.findOne({ _id: decoded.id });
-  if (!userFound) return; // mandar al middleware de error (quitar cookie)
-  if (!userFound.refreshToken) return // mandar al middleware de error (quitar cookie)
+  if (!userFound) throw new AppError(ERROR_NAMES.notFound, ERROR_MESSAGES.userNotFound, "");
+  if (!userFound.refreshToken) throw new AppError(ERROR_NAMES.notFound, ERROR_MESSAGES.refreshTokenNotFound, "");
 
   await User.findByIdAndUpdate(userFound.id, { refreshToken: null }, { new: true });
   await User.findByIdAndUpdate(userFound.id, { sessionActive: false }, { new: true });

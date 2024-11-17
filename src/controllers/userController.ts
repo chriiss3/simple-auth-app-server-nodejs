@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import User from "../userModel";
 
 const updatePassword = async (req: Request, res: Response) => {
   res.send("Password updated!");
@@ -20,4 +21,15 @@ const updateEmail = async (req: Request, res: Response) => {
   res.send("Email updated!");
 };
 
-export { updatePassword, getUser, deleteAccount, empty, updateEmail };
+const getUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await User.find({});
+
+    res.status(200).json({users});
+    console.log(User);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export { updatePassword, getUser, deleteAccount, empty, updateEmail, getUsers };
