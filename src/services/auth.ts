@@ -72,8 +72,8 @@ const sendResetEmail = async (token: string, email: string): Promise<void> => {
   await mailgunClient.messages.create(MAILGUN_DOMAIN, emailOptions);
 };
 
-const resetPassword = async (newPassword: string): Promise<void> => {
+const resetUserPassword = async (newPassword: string): Promise<void> => {
   await User.findByIdAndUpdate({ password: newPassword }, { new: true });
 };
 
-export { resetPassword, saveUser, setActiveSession, removeActiveSession, validateCredentials, sendResetEmail };
+export { resetUserPassword, saveUser, setActiveSession, removeActiveSession, validateCredentials, sendResetEmail };

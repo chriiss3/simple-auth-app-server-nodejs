@@ -61,7 +61,7 @@ const buildClientUrl = (): string => {
   }
 };
 
-const validatePasswordMatch = async (password, passwordToCompare) => {
+const validatePasswordMatch = async (password: string, passwordToCompare: string): Promise<boolean> => {
   const isMatch = await validatePassword(password, passwordToCompare);
 
   return isMatch;
@@ -69,10 +69,18 @@ const validatePasswordMatch = async (password, passwordToCompare) => {
 
 const isDevelopmentEnv = (): boolean => {
   if (NODE_ENV.trim() === "development") {
-    return true
+    return true;
   } else {
-    return false
+    return false;
   }
-}
+};
 
-export { setCookieOptions, AppError, handleCritialError, buildClientUrl, validateUser, validatePasswordMatch, isDevelopmentEnv };
+export {
+  setCookieOptions,
+  AppError,
+  handleCritialError,
+  buildClientUrl,
+  validateUser,
+  validatePasswordMatch,
+  isDevelopmentEnv,
+};

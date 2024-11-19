@@ -2,7 +2,7 @@ import jwt, { VerifyErrors } from "jsonwebtoken";
 import { UserPayloadTypes } from "../interfaces/user.js";
 import { JWT_SECRET_KEY } from "../config/env.js";
 
-const generateToken = (payload: { userId: string }, expireTime: number): Promise<string> => {
+const generateToken = (payload: { userId: string }, expireTime: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: expireTime }, (err, token) => {
       if (err) {

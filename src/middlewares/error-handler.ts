@@ -4,11 +4,12 @@ import { CLIENT_ERROR_MESSAGES, ERROR_MESSAGES, JWT_ERROR_MESSAGES, MONGOOSE_ERR
 import { AppError } from "../utils/index.js";
 import { NODE_ENV } from "../config/env.js";
 
+//
 const handleError = async (err: AppError, req: Request, res: Response, next: NextFunction) => {
   const DEV_ENV = NODE_ENV.trim() === "development";
   if (DEV_ENV) console.error(err);
 
-  // Libraries error
+  // Libraries errors
   if (err.message === "jwt expired") {
     if (err.origin === "resetPassword") {
       return res.status(401).json({ error: CLIENT_ERROR_MESSAGES.expiredResetLink });
@@ -27,7 +28,7 @@ const handleError = async (err: AppError, req: Request, res: Response, next: Nex
     return res.sendStatus(401);
   }
 
-  // Custom error
+  // Custom errors
   // Unauthorized
   if (err.message === ERROR_MESSAGES.invalidToken) {
     return res.status(401).json({ error: CLIENT_ERROR_MESSAGES.authError });
@@ -59,7 +60,7 @@ const handleError = async (err: AppError, req: Request, res: Response, next: Nex
     return res.status(400).json({ error: CLIENT_ERROR_MESSAGES.passwordIsMatch });
   }
 
-  // Ignore
+  // Ignore errors
   if (err instanceof ZodError) {
     return next();
   }

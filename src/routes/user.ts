@@ -1,5 +1,4 @@
 import { Router } from "express";
-
 import { updatePassword, getUser, deleteAccount, empty, updateEmail, getUsers } from "../controllers/user.js";
 import verifyClientToken from "../middlewares/client-token-verify.js";
 

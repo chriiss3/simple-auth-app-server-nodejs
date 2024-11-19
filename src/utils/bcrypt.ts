@@ -1,13 +1,14 @@
 import bcrypt from "bcrypt";
+import { BCRYPT_SALT_ROUNDS } from "../config/env";
 
-const hashPassword = async (password: string, saltRounds: number) => {
-  const passwordHash = await bcrypt.hash(password, saltRounds);
+const hashPassword = async (password: string): Promise<string> => {
+  const passwordHash = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
   return passwordHash;
 };
 
-const validatePassword = async (password: string, userPassword: string) => {
-  const isValid = await bcrypt.compare(password, userPassword);
+const validatePassword = async (password: string, passwordToCompare: string): Promise<boolean> => {
+  const isValid = await bcrypt.compare(password, passwordToCompare);
 
   return isValid;
 };
