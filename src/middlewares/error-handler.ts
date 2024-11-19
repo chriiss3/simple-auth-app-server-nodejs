@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
-
 import { CLIENT_ERROR_MESSAGES, ERROR_MESSAGES, JWT_ERROR_MESSAGES, MONGOOSE_ERROR_MESSAGES } from "../constants.js";
-import AppError from "../utils/customError.js";
+import { AppError } from "../utils/index.js";
 import { NODE_ENV } from "../config/env.js";
 
 const handleError = async (err: AppError, req: Request, res: Response, next: NextFunction) => {

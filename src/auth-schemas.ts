@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 import { CLIENT_ERROR_MESSAGES, ERROR_MESSAGES } from "./constants.js";
 
 const registerSchema = z.object({

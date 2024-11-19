@@ -1,17 +1,19 @@
 import jwt from "jsonwebtoken";
-import { validateAccessToken } from "../utils/jwt.js";
+import { verifyToken } from "../utils/jwt.js";
 import { Request, Response, NextFunction } from "express";
-import User from "../userModel.js";
-import { JWT_ACCESS_SECRET_KEY, JWT_ACCESS_TOKEN_NAME, NODE_ENV } from "../config/env.js";
+import User from "../user-model.js";
+import { AUTH_COOKIE_NAME, NODE_ENV } from "../config/env.js";
 import { CLIENT_ERROR_MESSAGES } from "../constants.js";
+import { UserPayloadTypes } from "../interfaces/user.js";
 
-const verifyAccessToken = async (req: Request, res: Response, next: NextFunction) => {
+const DEV_ENV = NODE_ENV.trim() === "development";
+
+const verifyClientToken = async (req: Request, res: Response, next: NextFunction) => {
   const accessToken = req.cookies.auth_access_token;
-  const DEV_ENV = NODE_ENV.trim() === "development";
 
   try {
-    const decoded = await validateAccessToken(accessToken, JWT_ACCESS_SECRET_KEY);
-    const userFound = await User.findOne({ _id: decoded.id });
+    const decoded = await verifyToken(accessToken);
+    const userFound = await User.findOne({ _id: (decoded as UserPayloadTypes).id });
 
     if (!userFound) return res.status(404).json({ error: CLIENT_ERROR_MESSAGES.userNotFound });
 
@@ -38,11 +40,11 @@ const verifyAccessToken = async (req: Request, res: Response, next: NextFunction
       if (err.message === "jwt must be provided") {
         return res.sendStatus(401);
       } else {
-        res.clearCookie(JWT_ACCESS_TOKEN_NAME);
+        res.clearCookie(AUTH_COOKIE_NAME);
         return res.status(401).json({ error: CLIENT_ERROR_MESSAGES.authError });
       }
     }
   }
 };
 
-export default verifyAccessToken;
+export default verifyClientToken;

@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "compile": "npx tsc",
-    "start:prod": "set NODE_ENV=production && npx node ./dist/app.js",
-    "start:dev": "set NODE_ENV=development && npx nodemon ./src/app.ts",
+    "start:prod": "set NODE_ENV=production && npx node ./dist/server.js",
+    "start:dev": "set NODE_ENV=development && npx nodemon ./src/server.ts",
     "lint": "npx eslint .",
     "format": "npx prettier --write ."
   },

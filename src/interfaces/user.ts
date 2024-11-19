@@ -11,10 +11,10 @@ interface UserTypes {
   _id: string;
 }
 
-interface UserTokenPayloadTypes {
+interface UserPayloadTypes {
   id: string;
   iat: number;
   exp: number;
 }
 
-export { UserTypes, UserTokenPayloadTypes };
+export { UserTypes, UserPayloadTypes };

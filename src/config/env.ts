@@ -6,31 +6,39 @@ const envFile = isProduction ? ".env.production" : ".env.development";
 config({ path: envFile });
 
 const CLIENT_URL = process.env.CLIENT_URL as string;
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY as string;
-const DB_URL = process.env.DB_URL as string;
 const PORT = Number(process.env.PORT);
+
+const MONGODB_URL = process.env.MONGODB_URL as string;
+const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN as string;
+const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY as string;
+
+//
 const IS_GITHUB_REPO = process.env.IS_GITHUB_REPO as string;
 const GITHUB_REPO_NAME = process.env.GITHUB_REPO_NAME as string;
-const JWT_REFRESH_SECRET_KEY = process.env.JWT_REFRESH_SECRET_KEY as string;
-const JWT_ACCESS_SECRET_KEY = process.env.JWT_ACCESS_SECRET_KEY as string;
-const JWT_REFRESH_TOKEN_NAME = process.env.JWT_REFRESH_TOKEN_NAME as string;
-const JWT_ACCESS_TOKEN_NAME = process.env.JWT_ACCESS_TOKEN_NAME as string;
-const REFRESH_TOKEN_COOKIE_EXPIRE_TIME = Number(process.env.REFRESH_TOKEN_COOKIE_EXPIRE_TIME);
-const ACCESS_TOKEN_COOKIE_EXPIRE_TIME = Number(process.env.ACCESS_TOKEN_COOKIE_EXPIRE_TIME);
+
+const REFRESH_TOKEN_EXPIRE_TIME = Number(process.env.REFRESH_TOKEN_EXPIRE_TIME);
+const ACCESS_TOKEN_EXPIRE_TIME = Number(process.env.ACCESS_TOKEN_EXPIRE_TIME);
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY as string;
+const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME as string;
+const AUTH_COOKIE_EXPIRE_TIME = process.env.AUTH_COOKIE_EXPIRE_TIME as string;
+
+const EMAIL_SENDER = process.env.EMAIL_SENDER as string;
+
 const NODE_ENV = process.env.NODE_ENV as string;
 
 export {
   CLIENT_URL,
-  SENDGRID_API_KEY,
-  DB_URL,
+  EMAIL_SENDER,
   PORT,
+  MONGODB_URL,
   IS_GITHUB_REPO,
   GITHUB_REPO_NAME,
-  JWT_ACCESS_SECRET_KEY,
-  JWT_REFRESH_TOKEN_NAME,
-  JWT_REFRESH_SECRET_KEY,
-  JWT_ACCESS_TOKEN_NAME,
-  REFRESH_TOKEN_COOKIE_EXPIRE_TIME,
-  ACCESS_TOKEN_COOKIE_EXPIRE_TIME,
+  JWT_SECRET_KEY,
+  REFRESH_TOKEN_EXPIRE_TIME,
+  ACCESS_TOKEN_EXPIRE_TIME,
+  AUTH_COOKIE_NAME,
   NODE_ENV,
+  MAILGUN_DOMAIN,
+  MAILGUN_API_KEY,
+  AUTH_COOKIE_EXPIRE_TIME
 };

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import User from "../userModel";
+import User from "../user-model";
 
 const updatePassword = async (req: Request, res: Response) => {
   res.send("Password updated!");
@@ -25,7 +25,7 @@ const getUsers = async (req: Request, res: Response) => {
   try {
     const users = await User.find({});
 
-    res.status(200).json({users});
+    res.status(200).json({ users });
     console.log(User);
   } catch (err) {
     console.error(err);

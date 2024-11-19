@@ -1,9 +1,10 @@
-import jwt from "jsonwebtoken";
-import { UserTokenPayloadTypes } from "../interfaces/userInterfaces.js";
+import jwt, { VerifyErrors } from "jsonwebtoken";
+import { UserPayloadTypes } from "../interfaces/user.js";
+import { JWT_SECRET_KEY } from "../config/env.js";
 
-const generateAccessToken = (payload: { id: string }, secretKey: string): Promise<string> => {
+const generateToken = (payload: { userId: string }, expireTime: number): Promise<string> => {
   return new Promise((resolve, reject) => {
-    jwt.sign(payload, secretKey, { expiresIn: "1h" }, (err, token) => {
+    jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: expireTime }, (err, token) => {
       if (err) {
         reject(err);
       } else {
@@ -13,40 +14,16 @@ const generateAccessToken = (payload: { id: string }, secretKey: string): Promis
   });
 };
 
-const generateRefreshToken = (payload: { id: string }, secretKey: string): Promise<string> => {
+const verifyToken = (token: string): Promise<UserPayloadTypes | VerifyErrors> => {
   return new Promise((resolve, reject) => {
-    jwt.sign(payload, secretKey, { expiresIn: "30d" }, (err, token) => {
+    jwt.verify(token, JWT_SECRET_KEY, (err, payload) => {
       if (err) {
         reject(err);
       } else {
-        resolve(token as string);
+        resolve(payload as UserPayloadTypes);
       }
     });
   });
 };
 
-const validateAccessToken = (token: string, secretKey: string): Promise<UserTokenPayloadTypes> => {
-  return new Promise((resolve, reject) => {
-    jwt.verify(token, secretKey, (err, payload) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(payload as UserTokenPayloadTypes);
-      }
-    });
-  });
-};
-
-const validateRefreshToken = (token: string, secretKey: string): Promise<UserTokenPayloadTypes> => {
-  return new Promise((resolve, reject) => {
-    jwt.verify(token, secretKey, (err, payload) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(payload as UserTokenPayloadTypes);
-      }
-    });
-  });
-};
-
-export { generateAccessToken, generateRefreshToken, validateAccessToken, validateRefreshToken };
+export { verifyToken, generateToken };

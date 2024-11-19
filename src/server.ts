@@ -2,15 +2,13 @@ import express, { Request, Response } from "express";
 import morgan from "morgan";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import sgMail from "@sendgrid/mail";
 import helmet from "helmet";
 import { connect } from "mongoose";
-
-import { CLIENT_URL, SENDGRID_API_KEY, PORT, DB_URL, NODE_ENV } from "./config/env.js";
-import authRoutes from "./routes/authRoutes.js";
-import errorHandler from "./middlewares/errorHandler.js";
-import userRoutes from "./routes/userRoutes.js";
-import handleCritialError from "./utils/criticalErrorHandler.js";
+import { CLIENT_URL, PORT, MONGODB_URL, NODE_ENV } from "./config/env.js";
+import authRoutes from "./routes/auth.js";
+import errorHandler from "./middlewares/error-handler.js";
+import userRoutes from "./routes/user.js";
+import { handleCritialError } from "./utils/index.js";
 
 const app = express();
 
@@ -25,7 +23,6 @@ app.use(express.json());
 app.use(morgan("dev"));
 app.use(cors(corsOptions));
 app.use(cookieParser());
-sgMail.setApiKey(SENDGRID_API_KEY);
 app.use(helmet());
 
 app.use("/api", userRoutes);
@@ -42,7 +39,7 @@ process.on("uncaughtException", (err) => {
 
 const startServer = async () => {
   try {
-    await connect(DB_URL);
+    await connect(MONGODB_URL);
 
     console.log("Connected to DB");
     console.log("Environment:", NODE_ENV.trim());
