@@ -11,6 +11,7 @@ const PORT = Number(process.env.PORT);
 const MONGODB_URL = process.env.MONGODB_URL as string;
 const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN as string;
 const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY as string;
+const MAILGUN_USERNAME = process.env.MAILGUN_USERNAME as string
 
 //
 const IS_GITHUB_REPO = process.env.IS_GITHUB_REPO as string;
@@ -35,6 +36,7 @@ export {
   GITHUB_REPO_NAME,
   JWT_SECRET_KEY,
   REFRESH_TOKEN_EXPIRE_TIME,
+  MAILGUN_USERNAME,
   ACCESS_TOKEN_EXPIRE_TIME,
   AUTH_COOKIE_NAME,
   NODE_ENV,
