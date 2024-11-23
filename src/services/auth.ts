@@ -3,13 +3,11 @@ import { ERROR_MESSAGES, ERROR_NAMES } from "../constants.js";
 import { validatePassword } from "../utils/bcrypt.js";
 import { MAILGUN_DOMAIN, EMAIL_SENDER } from "../config/env.js";
 import type { UserTypes } from "../interfaces/user.js";
-import { AppError, buildClientUrl } from "../utils/index.js";
+import { AppError, buildClientUrl, validateUser } from "../utils/index.js";
 import mailgunClient from "../config/mailgun.js";
 
 const saveUser = async (email: string, password: string, name: string): Promise<UserTypes> => {
-  const user = await User.findOne({ email });
-
-  if (user) throw new AppError(ERROR_NAMES.badRequest, ERROR_MESSAGES.accountAlreadyExists, "");
+  await validateUser(email, null, ERROR_MESSAGES.accountAlreadyExists);
 
   const newUser = new User({
     email,
@@ -41,9 +39,7 @@ const removeActiveSession = async (userId: string): Promise<void> => {
 };
 
 const validateCredentials = async (email: string, password: string): Promise<UserTypes> => {
-  const user = await User.findOne({ email });
-
-  if (!user) throw new AppError(ERROR_NAMES.notFound, ERROR_MESSAGES.accountNotFound, "");
+  const user = await validateUser(email, null, ERROR_MESSAGES.accountNotFound);
 
   const isMatch = await validatePassword(password, user.password);
 

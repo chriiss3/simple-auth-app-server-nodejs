@@ -8,7 +8,7 @@ import {
   AUTH_COOKIE_EXPIRE_TIME,
 } from "../config/env.js";
 import { UserPayloadTypes } from "../interfaces/user.js";
-import { ERROR_MESSAGES, ERROR_NAMES, CLIENT_SUCCES_MESSAGES } from "../constants.js";
+import { ERROR_MESSAGES, ERROR_NAMES, CLIENT_SUCCES_MESSAGES, CLIENT_ERROR_MESSAGES } from "../constants.js";
 import {
   resetUserPassword,
   saveUser,
@@ -121,7 +121,7 @@ const forgotPassword = async (req: Request, res: Response, next: NextFunction): 
   try {
     const email = req.body.email;
 
-    const user = await validateUser(email, null);
+    const user = await validateUser(email, null, ERROR_MESSAGES.accountNotFound);
 
     const accessToken = await generateToken({ userId: user._id }, ACCESS_TOKEN_EXPIRE_TIME);
 
@@ -146,7 +146,7 @@ const resetPassword = async (req: Request, res: Response, next: NextFunction) =>
   try {
     const decoded = await verifyToken(heeaderToken);
 
-    const user = await validateUser(null, (decoded as UserPayloadTypes).userId);
+    const user = await validateUser(null, (decoded as UserPayloadTypes).userId, ERROR_MESSAGES.accountNotFound);
 
     const isMatch = await validatePassword(newPassword, user.password);
     if (isMatch) throw new AppError(ERROR_NAMES.badRequest, ERROR_MESSAGES.passwordIsMatch, "");

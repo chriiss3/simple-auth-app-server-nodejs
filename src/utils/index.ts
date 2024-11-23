@@ -2,12 +2,11 @@ import { NODE_ENV, IS_GITHUB_REPO, CLIENT_URL, GITHUB_REPO_NAME } from "../confi
 import User from "../user-model";
 import { ERROR_MESSAGES, ERROR_NAMES } from "../constants";
 import { UserTypes } from "../interfaces/user";
-import { validatePassword } from "./bcrypt";
+import { CookieOptionsTypes } from "../interfaces";
 
 const DEV_ENV = NODE_ENV.trim() === "development";
 
-//
-const setCookieOptions = (maxAge: number) => {
+const setCookieOptions = (maxAge: number): CookieOptionsTypes => {
   return {
     httpOnly: !DEV_ENV,
     secure: !DEV_ENV,
@@ -39,16 +38,22 @@ const handleCritialError = (err: unknown): void => {
   process.exit(1);
 };
 
-const validateUser = async (email: string | null, id: string | null): Promise<UserTypes> => {
+const validateUser = async (email: string | null, id: string | null, throwErrorIf: string): Promise<UserTypes> => {
   let user: any;
 
   if (email) {
     user = await User.findOne({ email });
-  } else if (id) {
+  } else {
     user = await User.findById(id);
   }
 
-  if (!user) throw new AppError(ERROR_NAMES.notFound, ERROR_MESSAGES.accountNotFound, "");
+  // Proporciona un throwErrorIf valido
+  // Asegurar que cuando se llama esta funcion throwErrorIf sea siempre ERROR_MESSAGES.accountNotFound o ERROR_MESSAGES.accountAlreadyExists
+  if (!user && throwErrorIf === ERROR_MESSAGES.accountNotFound) {
+    throw new AppError(ERROR_NAMES.notFound, ERROR_MESSAGES.accountNotFound, "");
+  } else if (!user && throwErrorIf === ERROR_MESSAGES.accountAlreadyExists) {
+    throw new AppError(ERROR_NAMES.badRequest, ERROR_MESSAGES.accountAlreadyExists, "");
+  }
 
   return user;
 };
@@ -61,12 +66,6 @@ const buildClientUrl = (): string => {
   }
 };
 
-const validatePasswordMatch = async (password: string, passwordToCompare: string): Promise<boolean> => {
-  const isMatch = await validatePassword(password, passwordToCompare);
-
-  return isMatch;
-};
-
 const isDevelopmentEnv = (): boolean => {
   if (NODE_ENV.trim() === "development") {
     return true;
@@ -75,12 +74,4 @@ const isDevelopmentEnv = (): boolean => {
   }
 };
 
-export {
-  setCookieOptions,
-  AppError,
-  handleCritialError,
-  buildClientUrl,
-  validateUser,
-  validatePasswordMatch,
-  isDevelopmentEnv,
-};
+export { setCookieOptions, AppError, handleCritialError, buildClientUrl, validateUser, isDevelopmentEnv };
